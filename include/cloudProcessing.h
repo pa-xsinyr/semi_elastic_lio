@@ -131,9 +131,9 @@ private:
 	int sweep_id;
 
 	std::vector<pcl::PointCloud<pcl::PointXYZINormal>> scan_cloud;
-	std::vector<std::vector<extraElement>> v_extra_elem;
+	std::vector<std::vector<extraElement>> v_extra_elem;//存储多个的容器
 
-	// function
+	// function，对于LIVOX的接口需要自己写，有官方库
 	void ousterHandler(const sensor_msgs::PointCloud2::ConstPtr &msg, std::vector<point3D> &v_cloud_out, double &dt_offset);
 	void velodyneHandler(const sensor_msgs::PointCloud2::ConstPtr &msg, std::vector<point3D> &v_cloud_out, double &dt_offset);
 	void robosenseHandler(const sensor_msgs::PointCloud2::ConstPtr &msg, std::vector<point3D> &v_cloud_out, double &dt_offset);
