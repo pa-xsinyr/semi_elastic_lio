@@ -87,9 +87,9 @@ enum NoiseOrder
     O_GW = 9
 };
 
-enum MotionCompensation
+enum MotionCompensation//枚举表示不同的运动补偿模式
 {
-    NONE = 0,
+    NONE = 0,//枚举常量
     CONSTANT_VELOCITY = 1,
     ITERATIVE = 2,
     CONTINUOUS = 3,

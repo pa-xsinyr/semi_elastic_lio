@@ -15,14 +15,14 @@ class imuIntegration;
 
 class state
 {
-public:
+public://成员变量
 
 	Eigen::Quaterniond rotation;
 	Eigen::Vector3d translation;
 	Eigen::Vector3d velocity;
 	Eigen::Vector3d ba;
 	Eigen::Vector3d bg;
-	imuIntegration *pre_integration;
+	imuIntegration *pre_integration;//处理传感器的积分
 
 	Eigen::Quaterniond rotation_begin;
 	Eigen::Vector3d translation_begin;
@@ -35,14 +35,14 @@ public:
 	std::vector<Eigen::Vector3d> trans_buf;
 	std::vector<Eigen::Vector3d> velo_buf;
 	std::vector<Eigen::Vector3d> un_acc_buf;
-	std::vector<Eigen::Vector3d> un_omega_buf;
+	std::vector<Eigen::Vector3d> un_omega_buf;//存储历史数据的缓冲区
 
 	state(const Eigen::Quaterniond &rotation_, const Eigen::Vector3d &translation_, 
-		const Eigen::Vector3d &velocity_, const Eigen::Vector3d& ba_, const Eigen::Vector3d& bg_);
+		const Eigen::Vector3d &velocity_, const Eigen::Vector3d& ba_, const Eigen::Vector3d& bg_);//构造函数，初始化state对象的初始状态
 
-	state(const state* state_temp, bool copy = false);
+	state(const state* state_temp, bool copy = false);//构造函数，创建新的对象state
 
-	void release();
+	void release();//成员函数，释放资源
 };
 
 class imuIntegration

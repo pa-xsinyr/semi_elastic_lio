@@ -153,7 +153,7 @@ void saveCutCloud(std::string &str, pcl::PointCloud<pcl::PointXYZINormal>::Ptr &
 {
     pcl::PCDWriter pcd_writer;
     pcd_writer.writeBinary(str, *p_cloud_temp);
-}//点到面ICP核心内容。非常重要
+}//点到面ICP核心内容。非常重要★
 
 void subSampleFrame(std::vector<point3D> &frame, double size_voxel)//网格采样的体素大小
 {
@@ -220,16 +220,17 @@ void distortFrameUsingImu(std::vector<point3D> &points, state* cur_state, Eigen:
     Eigen::Quaterniond q_end_inv = cur_state->rotation.inverse();
     Eigen::Vector3d t_end_inv = -1.0 * (q_end_inv * cur_state->translation);
 
-    std::vector<point3D>::iterator iter = points.begin();
+    std::vector<point3D>::iterator iter = points.begin();//成员函数，返回一个指向容器中第一个元素的迭代器。在这里，它返回一个指向 points 容器中第一个 point3D 对象的迭代器。迭代器类型用于遍历 std::vector<point3D> 容器中的元素。
+    //将 iter 初始化为指向 points 容器中的第一个 point3D 对象的迭代器。你可以使用 iter 来遍历容器并访问其中的元素。
 
-    while (iter != points.end())
+    while (iter != points.end())//迭代器，遍历points容器中的元素
     {
         for (int n = 0; n + 1 < cur_state->dt_buf.size(); n++)
         {
-            time_imu_begin = cur_state->dt_buf[n] * 1000.0;
+            time_imu_begin = cur_state->dt_buf[n] * 1000.0;//指针，包含传感器数据的状态对象。数组容器，存储时间戳数据。箭头表示获取动作。
             time_imu_end = cur_state->dt_buf[n + 1] * 1000.0;
 
-            if ((*iter).relative_time > time_imu_begin && (*iter).relative_time < time_imu_end) 
+            if ((*iter).relative_time > time_imu_begin && (*iter).relative_time < time_imu_end) //解引用，获取指向的数据点或元素。获取成员变量或属性。
             {
                 q_imu_begin = cur_state->rot_buf[n];
                 q_imu_end = cur_state->rot_buf[n + 1];
@@ -240,14 +241,14 @@ void distortFrameUsingImu(std::vector<point3D> &points, state* cur_state, Eigen:
             else n++;
         }
 
-        double alpha_time = ((*iter).relative_time - time_imu_begin) / (time_imu_end - time_imu_begin);
+        double alpha_time = ((*iter).relative_time - time_imu_begin) / (time_imu_end - time_imu_begin);//用于插值操作，确定插值因子
         Eigen::Quaterniond q_alpha = q_imu_begin.slerp(alpha_time, q_imu_end);
         Eigen::Vector3d t_alpha = (1.0 - alpha_time) * t_imu_begin + alpha_time * t_imu_end;
 
         (*iter).raw_point = R_imu_lidar.transpose() * (q_end_inv * (q_alpha * (R_imu_lidar * (*iter).raw_point + t_imu_lidar) + t_alpha) + t_end_inv) - R_imu_lidar.transpose() * t_imu_lidar;
 
         iter++;
-    }
+    }//用IMU数据对LIDAR进行运动畸变矫正计算公式
 }
 
 void transformPoint(MotionCompensation compensation, point3D &point_temp, Eigen::Quaterniond &q_begin, Eigen::Quaterniond &q_end, 
@@ -264,7 +265,7 @@ void transformPoint(MotionCompensation compensation, point3D &point_temp, Eigen:
             break;
         case MotionCompensation::CONTINUOUS:
         case MotionCompensation::ITERATIVE:
-            R = q_begin.slerp(alpha_time, q_end).normalized().toRotationMatrix();
+            R = q_begin.slerp(alpha_time, q_end).normalized().toRotationMatrix();//插值结果被归一化，保证是有效的旋转矩阵
             t = (1.0 - alpha_time) * t_begin + alpha_time * t_end;
             break;
         case MotionCompensation::IMU:
@@ -273,4 +274,4 @@ void transformPoint(MotionCompensation compensation, point3D &point_temp, Eigen:
             break;
     }
     point_temp.point = R * (R_imu_lidar * point_temp.raw_point + t_imu_lidar) + t;
-}
+}//运动计算公式

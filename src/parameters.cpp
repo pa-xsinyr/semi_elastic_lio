@@ -111,13 +111,13 @@ odometryOptions odometryOptions::defaultRobustOutdoorLowInertia()
     return default_options;
 }
 
-void odometryOptions::recordParameters()
+void odometryOptions::recordParameters()//将参数记录到文件中
 {
 	std::string str_temp;
 
-	std::ofstream foutC(std::string(output_path + "/parameter_list.txt"), std::ios::app);
+	std::ofstream foutC(std::string(output_path + "/parameter_list.txt"), std::ios::app);//文件输出流，文件输出位置路径，在文件末尾追加数据
 
-	foutC << "init_voxel_size: " << init_voxel_size << std::endl;
+	foutC << "init_voxel_size: " << init_voxel_size << std::endl;//参数名称：参数值
 	foutC << "init_sample_voxel_size: " << init_sample_voxel_size << std::endl;
 	foutC << "init_num_frames: " << init_num_frames << std::endl;
 	foutC << "num_for_initialization: " << num_for_initialization << std::endl;
@@ -128,7 +128,7 @@ void odometryOptions::recordParameters()
 	foutC << "min_distance_points: " << min_distance_points << std::endl;
 	foutC << "distance_error_threshold: " << distance_error_threshold << std::endl;
 	foutC << "robust_minimal_level: " << robust_minimal_level << std::endl;
-	str_temp = robust_registration ? "true" : "false";
+	str_temp = robust_registration ? "true" : "false";//布尔值处理
 	foutC << "robust_registration: " << str_temp << std::endl;
 	foutC << "robust_full_voxel_threshold: " << robust_full_voxel_threshold << std::endl;
 	foutC << "robust_empty_voxel_threshold: " << robust_empty_voxel_threshold << std::endl;
@@ -191,7 +191,7 @@ void odometryOptions::recordParameters()
 	}
 	foutC << "initialization: " << str_temp << std::endl;
     
-    foutC.close();
+    foutC.close();//将缓冲的数据写入文件，并释放相关资源
 
     optimize_options.recordParameters();
 }
