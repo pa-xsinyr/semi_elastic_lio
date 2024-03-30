@@ -1,33 +1,33 @@
 #include "lioOptimization.h"
 
-cloudFrame::cloudFrame(std::vector<point3D> &point_frame_, std::vector<point3D> &const_frame_, state *p_state_)
-{
-    point_frame.insert(point_frame.end(), point_frame_.begin(), point_frame_.end());
+cloudFrame::cloudFrame(std::vector<point3D> &point_frame_, std::vector<point3D> &const_frame_, state *p_state_)//指向state对象的指针
+{//cloudFrame 类的对象通常用于存储点云数据和状态信息。point_frame 和 const_frame 是存储点云数据的向量。p_state 是指向状态信息的指针。
+    point_frame.insert(point_frame.end(), point_frame_.begin(), point_frame_.end());//将 point_frame_ 中的元素插入到 point_frame 向量的末尾
     const_frame.insert(const_frame.end(), const_frame_.begin(), const_frame_.end());
 
-    p_state = p_state_;
+    p_state = p_state_;//将 p_state_ 指针赋值给 p_state 成员变量
 
     success = true;
-}
+}//请注意，这段代码只是构造函数的定义，实际使用时需要在其他地方创建 cloudFrame 对象并传递相应的参数
 
-cloudFrame::cloudFrame(cloudFrame *p_cloud_frame)
+cloudFrame::cloudFrame(cloudFrame *p_cloud_frame)//类的构造函数。构造函数是特殊的成员函数，用于初始化类的对象。接受一个指向 cloudFrame 对象的指针作为参数。
 {
-    time_sweep_begin = p_cloud_frame->time_sweep_begin;
+    time_sweep_begin = p_cloud_frame->time_sweep_begin;//成员变量赋值，复制时间范围的起始和结束时间
     time_sweep_end = p_cloud_frame->time_sweep_end;
 
     id = p_cloud_frame->id;
-    frame_id = p_cloud_frame->frame_id;
+    frame_id = p_cloud_frame->frame_id;// 复制帧的ID和frame_id
 
-    p_state = p_cloud_frame->p_state;
+    p_state = p_cloud_frame->p_state;// 复制指向点云帧状态的指针
 
-    point_frame.insert(point_frame.end(), p_cloud_frame->point_frame.begin(), p_cloud_frame->point_frame.end());
+    point_frame.insert(point_frame.end(), p_cloud_frame->point_frame.begin(), p_cloud_frame->point_frame.end());//将点云数据从输入点云帧插入到当前点云帧中。insert函数将原范围的元素追加到目标范围
     const_frame.insert(const_frame.end(), p_cloud_frame->const_frame.begin(), p_cloud_frame->const_frame.end());
 
     offset_begin = p_cloud_frame->offset_begin;
     offset_end = p_cloud_frame->offset_end;
-    dt_offset = p_cloud_frame->dt_offset;
+    dt_offset = p_cloud_frame->dt_offset;// 复制偏移量和时间偏移量
 
-    success = p_cloud_frame->success;
+    success = p_cloud_frame->success;// 复制帧是否成功的标志
 }
 
 void cloudFrame::release()

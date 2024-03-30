@@ -101,7 +101,7 @@ public:
 
     Eigen::Matrix<double, 15, 1> evaluate(const Eigen::Vector3d &p_last, const Eigen::Quaterniond &q_last, const Eigen::Vector3d &v_last, const Eigen::Vector3d &ba_last, 
 	const Eigen::Vector3d &bg_last, const Eigen::Vector3d &p_cur, const Eigen::Quaterniond &q_cur, const Eigen::Vector3d &v_cur, const Eigen::Vector3d &ba_cur, const Eigen::Vector3d &bg_cur);
-
+//表示预测的IMU测量与实际测量之间的残差
 	void release();
 };
 
