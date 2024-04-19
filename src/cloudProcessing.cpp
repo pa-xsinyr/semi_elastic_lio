@@ -356,7 +356,7 @@ void cloudProcessing::robosenseHandler(const sensor_msgs::PointCloud2::ConstPtr 
         return;
     }
 
-    if (raw_cloud.points[size - 1].timestamp > 0)//访问点云最后一个点.的时间戳
+    if (raw_cloud.points[size - 1].timestamp > 0)//访问点云最后一个点的时间戳
         given_offset_time = true;
     else
         given_offset_time = false;//检查点云的最后一个点的时间戳t是否大于0

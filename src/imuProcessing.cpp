@@ -10,7 +10,7 @@ state::state(const Eigen::Quaterniond &rotation_, const Eigen::Vector3d &transla
     velo_buf.push_back(velocity);
 
     pre_integration = nullptr;
-}
+}//这段代码的目的是初始化state类的实例，设置其初始状态，并准备好用于存储历史数据的缓冲区。
 
 state::state(const state* state_temp, bool copy)
 {
@@ -63,48 +63,55 @@ state::state(const state* state_temp, bool copy)
 
         pre_integration = nullptr;
     }
-}
+}//这段代码实现了`state`类的构造函数的另一个版本，它接受一个指向另一个`state`对象的指针和一个布尔值参数。
+// 如果`copy`为真，表示要进行深拷贝。在这种情况下，它会复制传入的`state_temp`对象的所有属性，并创建一个新的`imuIntegration`对象进行深拷贝。同时，它还将`state_temp`对象的历史数据缓冲区中的数据复制到当前对象的对应缓冲区中。
+// 如果`copy`为假，表示要进行浅拷贝。在这种情况下，它会将传入的`state_temp`对象的属性直接复制到当前对象，并初始化历史数据缓冲区的第一个元素。
+//无论是深拷贝还是浅拷贝，这个构造函数都是为了创建一个新的`state`对象，并根据参数选择是否复制传入的`state_temp`对象的属性。
 
 void state::release()
 {
     if(pre_integration != nullptr)
         pre_integration->release();
 
-    delete pre_integration;
+    delete pre_integration;//关键字释放内存空间
 
-    pre_integration = nullptr;
+    pre_integration = nullptr;//设为空指针，避免悬空指针
 
-    std::vector<double>().swap(dt_buf);
+    std::vector<double>().swap(dt_buf);//匿名的临时对象，空向量。交换，清空dt_buf内存，并且临时向量（空向量）已经销毁了，释放了它的内存。
     std::vector<Eigen::Quaterniond>().swap(rot_buf);
     std::vector<Eigen::Vector3d>().swap(trans_buf);
     std::vector<Eigen::Vector3d>().swap(velo_buf);
     std::vector<Eigen::Vector3d>().swap(un_acc_buf);
     std::vector<Eigen::Vector3d>().swap(un_omega_buf);
-}
+}//这段代码定义了`state`类的`release()`函数，用于释放当前对象所占用的资源，并将其成员变量重置为默认值或空状态。
+//首先，通过检查`pre_integration`指针是否为空，来决定是否需要调用`pre_integration`对象的`release()`函数释放其所占用的资源。
+//接着，通过`delete`关键字释放`pre_integration`指针指向的内存空间，并将`pre_integration`指针设置为`nullptr`，以避免悬空指针。
+//然后，通过调用`swap()`函数和临时的空向量来清空`dt_buf`、`rot_buf`、`trans_buf`、`velo_buf`、`un_acc_buf`和`un_omega_buf`，从而释放它们占用的内存空间，并将它们的容量缩减为0。
+//总之，这段代码的作用是在释放当前对象时，清理和释放它所占用的资源，以防止内存泄漏和资源泄漏。
 
 imuIntegration::imuIntegration(const Eigen::Vector3d &acc_0_, const Eigen::Vector3d &gyr_0_,
-               const Eigen::Vector3d &linearized_ba_, const Eigen::Vector3d &linearized_bg_, 
+               const Eigen::Vector3d &linearized_ba_, const Eigen::Vector3d &linearized_bg_, //线性化的加速度偏移，线性化的陀螺仪偏移
                const double acc_cov_, const double gyr_cov_, const double b_acc_cov_, const double b_gyr_cov_)
-    : acc_0{acc_0_}, gyr_0{gyr_0_}, linearized_acc{acc_0_}, linearized_gyr{gyr_0_},
+    : acc_0{acc_0_}, gyr_0{gyr_0_}, linearized_acc{acc_0_}, linearized_gyr{gyr_0_},//冒号用于成员初始化列表，在类的构造函数中，用于对类的成员变量进行初始化，这种语法允许在构造函数体执行之前对成员变量进行初始化，可以提高代码的效率和可读性。
       linearized_ba{linearized_ba_}, linearized_bg{linearized_bg_}, 
       acc_cov{acc_cov_}, gyr_cov{gyr_cov_}, b_acc_cov{b_acc_cov_}, b_gyr_cov{b_gyr_cov_}, 
         jacobian{Eigen::Matrix<double, 15, 15>::Identity()}, covariance{Eigen::Matrix<double, 15, 15>::Zero()},
-      sum_dt{0.0}, delta_p{Eigen::Vector3d::Zero()}, delta_q{Eigen::Quaterniond::Identity()}, delta_v{Eigen::Vector3d::Zero()}, delta_g{Eigen::Vector3d::Zero()}
+      sum_dt{0.0}, delta_p{Eigen::Vector3d::Zero()}, delta_q{Eigen::Quaterniond::Identity()}, delta_v{Eigen::Vector3d::Zero()}, delta_g{Eigen::Vector3d::Zero()}//用于存储增量的变量
 
 {
-    noise = Eigen::Matrix<double, 18, 18>::Zero();
+    noise = Eigen::Matrix<double, 18, 18>::Zero();//传感器测量噪声
     noise.block<3, 3>(0, 0) =  (acc_cov * acc_cov) * Eigen::Matrix3d::Identity();
     noise.block<3, 3>(3, 3) =  (gyr_cov * gyr_cov) * Eigen::Matrix3d::Identity();
     noise.block<3, 3>(6, 6) =  (acc_cov * acc_cov) * Eigen::Matrix3d::Identity();
     noise.block<3, 3>(9, 9) =  (gyr_cov * gyr_cov) * Eigen::Matrix3d::Identity();
     noise.block<3, 3>(12, 12) =  (b_acc_cov * b_acc_cov) * Eigen::Matrix3d::Identity();
     noise.block<3, 3>(15, 15) =  (b_gyr_cov * b_gyr_cov) * Eigen::Matrix3d::Identity();
-}
+}//初始化类的对象，设置初始值和噪声方差，并准备好用于存储增量的变量。
 
 imuIntegration::imuIntegration(const imuIntegration* integration_temp, const Eigen::Vector3d &linearized_acc_, const Eigen::Vector3d &linearized_gyr_)
-    : linearized_acc{linearized_acc_}, linearized_gyr{linearized_gyr_}
+    : linearized_acc{linearized_acc_}, linearized_gyr{linearized_gyr_}//成员初始化列表的语法对成员变量初始化，将参数的值赋给成员变量
 {
-    dt = integration_temp->dt;
+    dt = integration_temp->dt;//将integration_temp对象各个成员变量的值赋给新的对应成员变量，对对象初始化
     acc_0 = integration_temp->acc_0;
     gyr_0 = integration_temp->gyr_0;
     acc_1 = integration_temp->acc_1;
@@ -125,7 +132,7 @@ imuIntegration::imuIntegration(const imuIntegration* integration_temp, const Eig
     delta_v = integration_temp->delta_v;
     delta_g = integration_temp->delta_g;
 
-    dt_buf.insert(dt_buf.end(), integration_temp->dt_buf.begin(), integration_temp->dt_buf.end());
+    dt_buf.insert(dt_buf.end(), integration_temp->dt_buf.begin(), integration_temp->dt_buf.end());//函数，将对象的缓冲区buf的内容插入到新对象对应的缓冲区中，以保留历史数据
     acc_buf.insert(acc_buf.end(), integration_temp->acc_buf.begin(), integration_temp->acc_buf.end());
     gyr_buf.insert(gyr_buf.end(), integration_temp->gyr_buf.begin(), integration_temp->gyr_buf.end());
 
@@ -133,7 +140,7 @@ imuIntegration::imuIntegration(const imuIntegration* integration_temp, const Eig
     gyr_cov = integration_temp->gyr_cov;
     b_acc_cov = integration_temp->b_acc_cov;
     b_gyr_cov = integration_temp->b_gyr_cov;
-}
+}//在这个场景下，有两个构造函数的存在是为了提供更灵活的对象创建方式和对象复制功能。第一个：用于初始化一个新的对象，通过传递各种参数直接创建一个新的对象。第二个：用于初始化一个新的对象，通过传递另一个对象的指针和其他参数，实现对象的复制功能。这样的构造函数通常用于需要复制现有对象的情况，使得可以轻松地创建一个与现有对象相同状态的新对象。因此，第二个构造函数的存在是为了满足对象复制的需求，以便在需要时创建对象的副本。
 
 void imuIntegration::push_back(double dt, const Eigen::Vector3d &acc, const Eigen::Vector3d &gyr)
 {
@@ -144,36 +151,36 @@ void imuIntegration::push_back(double dt, const Eigen::Vector3d &acc, const Eige
 }
 
 void imuIntegration::repropagate(const Eigen::Vector3d &_linearized_ba, const Eigen::Vector3d &_linearized_bg)
-{
-    sum_dt = 0.0;
+{//用于重新传播IMU积分过程，即重新计算IMU积分的结果，以更新状态。
+    sum_dt = 0.0;//时间总和初始化为0，重新传播需要重新计算时间总和
     acc_0 = linearized_acc;
-    gyr_0 = linearized_gyr;
-    delta_p.setZero();
+    gyr_0 = linearized_gyr;//确保重新传播的起始状态与当前状态一致
+    delta_p.setZero();//初始化
     delta_q.setIdentity();
     delta_v.setZero();
-    linearized_ba = _linearized_ba;
+    linearized_ba = _linearized_ba;更新以传入新值
     linearized_bg = _linearized_bg;
     jacobian.setIdentity();
     covariance.setZero();
     for (int i = 0; i < static_cast<int>(dt_buf.size()); i++)
-        propagate(dt_buf[i], acc_buf[i], gyr_buf[i]);
+        propagate(dt_buf[i], acc_buf[i], gyr_buf[i]);//遍历存储的时间步长、加速度和角速度数据，并对每个时间步长进行传播操作，使用存储的加速度和角速度数据重新计算IMU积分过程，从而更新状态估计的结果。
 }
 
-void imuIntegration::midPointIntegration(double dt_, 
+void imuIntegration::midPointIntegration(double dt_, //时间步长
                         const Eigen::Vector3d &acc_0_, const Eigen::Vector3d &gyr_0_,
-                        const Eigen::Vector3d &acc_1_, const Eigen::Vector3d &gyr_1_,
-                        const Eigen::Vector3d &delta_p, const Eigen::Quaterniond &delta_q, const Eigen::Vector3d &delta_v,
-                        const Eigen::Vector3d &linearized_ba, const Eigen::Vector3d &linearized_bg,
-                        Eigen::Vector3d &result_delta_p, Eigen::Quaterniond &result_delta_q, Eigen::Vector3d &result_delta_v,
-                        Eigen::Vector3d &result_linearized_ba, Eigen::Vector3d &result_linearized_bg, bool update_jacobian)
-{
-    Eigen::Vector3d un_acc_0 = delta_q * (acc_0_ - linearized_ba);
-    Eigen::Vector3d un_gyr = 0.5 * (gyr_0_ + gyr_1_) - linearized_bg;
-    result_delta_q = delta_q * Eigen::Quaterniond(1, un_gyr(0) * dt_ / 2, un_gyr(1) * dt_ / 2, un_gyr(2) * dt_ / 2);
-    Eigen::Vector3d un_acc_1 = result_delta_q * (acc_1_ - linearized_ba);
+                        const Eigen::Vector3d &acc_1_, const Eigen::Vector3d &gyr_1_,//两个时间点的加速度和陀螺仪数据
+                        const Eigen::Vector3d &delta_p, const Eigen::Quaterniond &delta_q, const Eigen::Vector3d &delta_v,//上一个状态的位移，旋转，速度
+                        const Eigen::Vector3d &linearized_ba, const Eigen::Vector3d &linearized_bg,//线性化的加速度偏移，线性化的陀螺仪偏移
+                        Eigen::Vector3d &result_delta_p, Eigen::Quaterniond &result_delta_q, Eigen::Vector3d &result_delta_v,//中点法积分后的位移、旋转和速度
+                        Eigen::Vector3d &result_linearized_ba, Eigen::Vector3d &result_linearized_bg, bool update_jacobian)//是否需要更新雅可比矩阵
+{//根据 IMU 传感器的加速度和陀螺仪数据，以及其他参数，进行中点法积分，计算出在一个时间步长内的位姿变化和状态更新。如果需要更新雅可比矩阵，则根据状态更新计算相应的雅可比矩阵和协方差矩阵，以用于后续的状态估计或滤波算法。
+    Eigen::Vector3d un_acc_0 = delta_q * (acc_0_ - linearized_ba);//利用当前旋转计算非线性加速度
+    Eigen::Vector3d un_gyr = 0.5 * (gyr_0_ + gyr_1_) - linearized_bg;//两个时刻的陀螺仪数据的平均值，减去线性化的bg
+    result_delta_q = delta_q * Eigen::Quaterniond(1, un_gyr(0) * dt_ / 2, un_gyr(1) * dt_ / 2, un_gyr(2) * dt_ / 2);//根据非线性的陀螺仪数据计算姿态更新的增量。中点法积分的公式
+    Eigen::Vector3d un_acc_1 = result_delta_q * (acc_1_ - linearized_ba);//根据姿态更新的增量和线性化的加速度偏移，计算当前时刻的非线性加速度
     Eigen::Vector3d un_acc = 0.5 * (un_acc_0 + un_acc_1);
     result_delta_p = delta_p + delta_v * dt_ + 0.5 * un_acc * dt_ * dt_;
-    result_delta_v = delta_v + un_acc * dt_;
+    result_delta_v = delta_v + un_acc * dt_;//根据两个时刻的非线性加速度的平均值，计算位移的更新增量和速度的更新增量
     result_linearized_ba = linearized_ba;
     result_linearized_bg = linearized_bg;
 
